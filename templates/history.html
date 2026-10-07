@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}DEEPSHIELD | Forensic Case History Registry{% endblock %}
+
+{% block content %}
+<div class="section-header">CASE HISTORY REGISTRY</div>
+
+<div class="panel">
+    <div class="panel-header">
+        <span>Archived Forensic Case Records</span>
+        <button class="btn-forensic btn-sm" onclick="loadHistoryRecords()">Refresh Archive</button>
+    </div>
+    <div class="panel-body" style="padding: 0;">
+        <table class="forensic-table">
+            <thead>
+                <tr>
+                    <th>CASE ID</th>
+                    <th>DATE & TIME</th>
+                    <th>FILENAME</th>
+                    <th>TYPE</th>
+                    <th>VERDICT</th>
+                    <th>CONFIDENCE</th>
+                    <th>PEAK FRAME</th>
+                    <th>REPORT</th>
+                </tr>
+            </thead>
+            <tbody id="history-table-body">
+                <tr>
+                    <td colspan="8" class="text-muted" style="text-align: center; padding: 1.5rem;">Loading archive records...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadHistoryRecords();
+    });
+</script>
+{% endblock %}

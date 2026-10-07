@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}DEEPSHIELD | Video Forensic Evidence Intake & Localization{% endblock %}
+
+{% block content %}
+<div class="section-header">MEDIA EVIDENCE INTAKE /// VIDEO FORENSICS</div>
+
+<!-- Forensic Evidence Tray Upload Box -->
+<div class="panel" id="upload-panel">
+    <div class="panel-header">
+        <span>Forensic Evidence Intake Tray</span>
+        <span style="color: var(--color-cnn);">FORMATS: MP4, AVI, MOV, MKV</span>
+    </div>
+    <div class="panel-body">
+        <form id="video-upload-form" enctype="multipart/form-data">
+            <input type="file" id="file-input" name="file" accept="video/mp4, video/avi, video/quicktime, video/x-matroska" hidden>
+            <div class="intake-tray" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                <div class="tray-icon">[ 🎬 INGEST VIDEO EVIDENCE STREAM ]</div>
+                <div class="tray-title">Click or Drag Suspect Video Clip Here</div>
+                <div class="tray-hint">System extracts SHA-256 cryptographic hash and stream metadata prior to frame sampling.</div>
+            </div>
+        </form>
+
+        <!-- Metadata Table (Populated on File Selection) -->
+        <div id="file-meta-container" class="hidden">
+            <table class="forensic-table intake-meta-table">
+                <thead>
+                    <tr>
+                        <th>FILE NAME</th>
+                        <th>FORMAT</th>
+                        <th>FILE SIZE</th>
+                        <th>SHA-256 HASH</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="meta-filename-val">--</td>
+                        <td id="meta-format-val">--</td>
+                        <td id="meta-size-val">--</td>
+                        <td id="meta-hash-val" style="color: var(--color-cnn); font-weight: 700;">Computing SHA-256...</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: 1.25rem; text-align: right;">
+                <button type="button" class="btn-forensic btn-forensic-primary" id="btn-submit-video">
+                    [ BEGIN FORENSIC ANALYSIS ]
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Analysis State -->
+<div id="loading-spinner" class="loading-box hidden">
+    <div class="forensic-spinner">[ PROCESSING VIDEO STREAM PIPELINE ]</div>
+    <div class="text-muted" id="loading-status-text" style="font-family: var(--font-mono); font-size: 0.95rem;">
+        Sampling frames & tracking MediaPipe Eye Aspect Ratio...
+    </div>
+    <div class="progress-line-bg">
+        <div class="progress-line-fill" id="analysis-progress-fill" style="width: 25%;"></div>
+    </div>
+</div>
+
+<!-- FORENSIC CASE REPORT RESULT SECTION -->
+<div id="result-container" class="result-container hidden">
+
+    <div class="demo-banner hidden" id="demo-mode-badge" style="background-color: var(--color-warn-bg); border: 2px solid var(--color-warn); color: var(--color-warn); padding: 0.8rem 1.2rem; margin-bottom: 1.5rem; font-family: var(--font-mono); font-size: 0.88rem; font-weight: 700; border-radius: var(--radius-md);">
+        ⚠️ <strong>DEMO MODE:</strong> Custom trained weights not found in <code>models/</code>. Operating using EfficientNetB0 ImageNet feature heuristics.
+    </div>
+
+    <!-- Case Header Bar with Horizontal Confidence Bar -->
+    <div class="case-header-bar">
+        <div>
+            <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);">CASE FILE IDENTIFIER</div>
+            <div style="font-family: var(--font-mono); font-size: 1.3rem; font-weight: 800; color: var(--text-bright);" id="case-id-display">
+                CASE DS-XXXX
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">VERDICT EVALUATION</div>
+            <span class="badge-verdict" id="verdict-badge">LIKELY MANIPULATED</span>
+        </div>
+
+        <div class="confidence-bar-container">
+            <span style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); font-weight: 700;">CONFIDENCE:</span>
+            <div class="confidence-bar-bg">
+                <div class="confidence-bar-fill" id="confidence-bar-fill" style="width: 86%;"></div>
+            </div>
+            <span class="confidence-val" id="fusion-score-val">86.4%</span>
+        </div>
+
+        <div>
+            <a href="#" id="btn-download-pdf" target="_blank" class="btn-forensic btn-sm">
+                PDF Report ➔
+            </a>
+        </div>
+    </div>
+
+    <!-- Evidence Section Header & Findings -->
+    <div class="section-header">MULTI-SIGNAL EVIDENCE FINDINGS</div>
+
+    <div class="evidence-grid">
+        <div class="evidence-card card-cnn">
+            <div class="evidence-card-header">
+                <span style="color: var(--color-cnn);">🧠 VISUAL SPATIAL CNN</span>
+                <span class="severity-pill" id="cnn-severity-pill">HIGH</span>
+            </div>
+            <div class="evidence-title">Spatial Texture Analysis</div>
+            <div style="font-family: var(--font-mono); font-size: 0.88rem; color: var(--text-muted);">
+                EfficientNetB0 Anomaly Score: <strong id="cnn-score-val" style="color: var(--color-cnn); font-size: 1.05rem;">82.0%</strong>
+            </div>
+        </div>
+
+        <div class="evidence-card card-blink">
+            <div class="evidence-card-header">
+                <span style="color: var(--color-blink);">👁️ BEHAVIORAL EYE BLINKING</span>
+                <span class="severity-pill" id="blink-severity-pill">HIGH</span>
+            </div>
+            <div class="evidence-title">MediaPipe EAR Tracking</div>
+            <div style="font-family: var(--font-mono); font-size: 0.88rem; color: var(--text-muted);">
+                Blink EAR Anomaly Score: <strong id="blink-score-val" style="color: var(--color-blink); font-size: 1.05rem;">71.0%</strong>
+            </div>
+        </div>
+
+        <div class="evidence-card card-fft">
+            <div class="evidence-card-header">
+                <span style="color: var(--color-fft);">📊 2D FFT FREQUENCY SPECTRUM</span>
+                <span class="severity-pill" id="fft-severity-pill">HIGH</span>
+            </div>
+            <div class="evidence-title">Spectral Noise Energy</div>
+            <div style="font-family: var(--font-mono); font-size: 0.88rem; color: var(--text-muted);">
+                High-Freq Noise Score: <strong id="fft-score-val" style="color: var(--color-fft); font-size: 1.05rem;">78.0%</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- SIGNATURE UI ELEMENT: SUSPICIOUS FRAME TIMELINE SCRUBBER -->
+    <div class="section-header">SUSPICIOUS FRAME TIMELINE</div>
+
+    <div class="timeline-scrubber-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted);">
+            <span style="color: var(--text-bright); font-weight: 700;">VIDEO TIME AXIS & ANOMALY MARKERS</span>
+            <span style="color: var(--color-fake); font-weight: 700;">● ANOMALY DETECTED (THRESHOLD ≥ 0.70)</span>
+        </div>
+
+        <div class="timeline-track-container" id="timeline-track-container">
+            <div class="timeline-line"></div>
+            <!-- Markers injected via JavaScript -->
+        </div>
+
+        <!-- Time Segments Badge Listing -->
+        <div style="margin-top: 1rem; font-family: var(--font-mono); font-size: 0.85rem;" id="segments-container">
+            <span style="color: var(--text-muted); font-weight: 700;">DETECTED ANOMALY TIME SEGMENTS:</span>
+            <div id="segments-list" style="margin-top: 0.6rem;">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js Timeline Graph -->
+    <div class="panel">
+        <div class="panel-header">
+            <span>Continuous Suspicion Curve Graph</span>
+            <span style="color: var(--color-warn);">THRESHOLD LINE (0.70)</span>
+        </div>
+        <div class="panel-body">
+            <div style="height: 240px; width: 100%;">
+                <canvas id="timelineChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- FRAME INSPECTOR PANEL -->
+    <div class="section-header">FRAME INSPECTOR</div>
+
+    <div class="frame-inspector-grid">
+        <!-- Left: Selected Frame Image Preview -->
+        <div class="panel" style="margin-bottom: 0;">
+            <div class="panel-header">
+                <span>Selected Frame Inspection</span>
+                <span id="inspector-frame-label" style="color: var(--color-cnn); font-weight: 800;">FRAME #--</span>
+            </div>
+            <div class="panel-body">
+                <div class="frame-preview-box">
+                    <img id="peak-frame-img" src="" alt="Selected Frame Preview">
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Frame Technical Information Table -->
+        <div class="panel" style="margin-bottom: 0;">
+            <div class="panel-header">
+                <span>Frame Metadata & Metrics</span>
+            </div>
+            <div class="panel-body" style="padding: 0;">
+                <table class="forensic-table">
+                    <tbody>
+                        <tr>
+                            <td>FRAME NUMBER</td>
+                            <td><strong id="inspector-frame-no" style="font-size: 1rem; color: var(--text-bright);">--</strong></td>
+                        </tr>
+                        <tr>
+                            <td>TIMESTAMP</td>
+                            <td><strong id="inspector-timestamp" style="font-size: 1rem; color: var(--color-cnn);">--</strong></td>
+                        </tr>
+                        <tr>
+                            <td>FUSION SUSPICION SCORE</td>
+                            <td><strong id="inspector-fusion-score" style="font-size: 1.1rem; color: var(--color-fake);">--</strong></td>
+                        </tr>
+                        <tr>
+                            <td>SPATIAL CNN SCORE</td>
+                            <td><strong id="inspector-cnn-score" style="color: var(--color-cnn);">--</strong></td>
+                        </tr>
+                        <tr>
+                            <td>FFT SPECTRUM SCORE</td>
+                            <td><strong id="inspector-fft-score" style="color: var(--color-fft);">--</strong></td>
+                        </tr>
+                        <tr>
+                            <td>TEMPORAL BLINK SCORE</td>
+                            <td><strong id="inspector-blink-score" style="color: var(--color-blink);">--</strong></td>
+                        </tr>
+                        <tr>
+                            <td>STATUS / SEVERITY</td>
+                            <td><span class="badge-verdict" id="inspector-severity">ANALYZED</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 1.8rem;"></div>
+
+    <!-- ADAPTIVE FUSION & TECHNICAL ANALYSIS -->
+    <div class="section-header">TECHNICAL ANALYSIS & ADAPTIVE FUSION</div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <span>Evidence Weight Fusion & System Assessment</span>
+        </div>
+        <div class="panel-body">
+            <div style="font-family: var(--font-mono); font-size: 0.92rem; color: var(--text-primary); padding: 1rem; background-color: var(--bg-panel-header); border: 2px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 1.5rem; line-height: 1.6;" id="explanation-text">
+                Multi-signal video analysis complete.
+            </div>
+
+            <div style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 800; color: var(--text-bright); margin-bottom: 0.6rem; text-transform: uppercase;">
+                ADAPTIVE SIGNAL FUSION WEIGHTING
+            </div>
+            <div class="fusion-weight-row">
+                <span>FACIAL FEATURES (EfficientNetB0 CNN)</span>
+                <span style="color: var(--color-cnn); font-weight: 700;">50% WEIGHT CONTRIBUTION</span>
+            </div>
+            <div class="fusion-weight-row">
+                <span>EYE ANALYSIS (MediaPipe EAR)</span>
+                <span style="color: var(--color-blink); font-weight: 700;">25% WEIGHT CONTRIBUTION</span>
+            </div>
+            <div class="fusion-weight-row">
+                <span>2D FFT SPECTRUM (Frequency Domain)</span>
+                <span style="color: var(--color-fft); font-weight: 700;">25% WEIGHT CONTRIBUTION</span>
+            </div>
+            <div class="fusion-weight-row" style="color: var(--color-blue); font-weight: 800; font-size: 1rem;">
+                <span>FINAL ADAPTIVE FUSION CONFIDENCE</span>
+                <span id="fusion-recap-val">86.4%</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        initVideoDetectionPage();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}DEEPSHIELD | Forensic Investigation Desk{% endblock %}
+
+{% block content %}
+<div class="section-header">INVESTIGATION DESK</div>
+
+<!-- Multi-Color Evidence Trail Workflow Header -->
+<div class="panel">
+    <div class="panel-header">
+        <span>Forensic Evidence Pipeline Workflow</span>
+        <span style="color: var(--color-cyan);">MULTI-SIGNAL PROTOCOL</span>
+    </div>
+    <div class="trail-container">
+        <div class="trail-step active">
+            <div class="trail-step-box step-1">01. INTAKE</div>
+            <span>MEDIA INGESTED</span>
+        </div>
+        <div class="trail-arrow">➔</div>
+        <div class="trail-step">
+            <div class="trail-step-box step-2">02. FACE DETECT</div>
+            <span>PRIMARY CROP</span>
+        </div>
+        <div class="trail-arrow">➔</div>
+        <div class="trail-step">
+            <div class="trail-step-box step-3">03. VISUAL CNN</div>
+            <span>EFFICIENTNETB0</span>
+        </div>
+        <div class="trail-arrow">➔</div>
+        <div class="trail-step">
+            <div class="trail-step-box step-4">04. FFT SPECTRUM</div>
+            <span>2D FREQ NOISE</span>
+        </div>
+        <div class="trail-arrow">➔</div>
+        <div class="trail-step">
+            <div class="trail-step-box step-5">05. TEMPORAL EAR</div>
+            <span>EYE BLINKING</span>
+        </div>
+        <div class="trail-arrow">➔</div>
+        <div class="trail-step">
+            <div class="trail-step-box step-6">06. FUSION</div>
+            <span>ADAPTIVE WEIGHTS</span>
+        </div>
+        <div class="trail-arrow">➔</div>
+        <div class="trail-step">
+            <div class="trail-step-box step-7">07. LOCALIZATION</div>
+            <span>PEAK & SEGMENTS</span>
+        </div>
+        <div class="trail-arrow">➔</div>
+        <div class="trail-step">
+            <div class="trail-step-box step-8">08. VERDICT</div>
+            <span>REPORT GEN</span>
+        </div>
+    </div>
+</div>
+
+<!-- New Investigation Entry Points -->
+<div class="section-header">NEW INVESTIGATION</div>
+
+<div class="entry-grid">
+    <div class="entry-card card-cyan">
+        <div>
+            <div class="entry-card-title" style="color: var(--color-cyan);">[ IMAGE FORENSICS ]</div>
+            <p class="entry-card-desc">Execute spatial CNN texture analysis and 2D FFT magnitude spectrum anomaly extraction on suspect facial imagery.</p>
+        </div>
+        <div>
+            <a href="/image" class="btn-forensic btn-cyan">Initiate Image Analysis ➔</a>
+        </div>
+    </div>
+
+    <div class="entry-card card-purple">
+        <div>
+            <div class="entry-card-title" style="color: var(--color-purple);">[ VIDEO FORENSICS ]</div>
+            <p class="entry-card-desc">Execute frame-by-frame temporal evaluation, MediaPipe EAR eye blinking tracking, peak frame extraction, and time-segment localization.</p>
+        </div>
+        <div>
+            <a href="/video" class="btn-forensic btn-purple">Initiate Video Analysis ➔</a>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Investigations Panel -->
+<div class="panel">
+    <div class="panel-header">
+        <span>Recent Investigations Registry</span>
+        <button class="btn-forensic btn-sm btn-cyan" onclick="loadRecentDeskRecords()">Refresh Registry</button>
+    </div>
+    <div class="panel-body" style="padding: 0;">
+        <table class="forensic-table">
+            <thead>
+                <tr>
+                    <th>CASE ID</th>
+                    <th>TIMESTAMP</th>
+                    <th>FILENAME</th>
+                    <th>MEDIA TYPE</th>
+                    <th>VERDICT</th>
+                    <th>CONFIDENCE</th>
+                    <th>PEAK FRAME</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody id="desk-history-tbody">
+                <tr>
+                    <td colspan="8" class="text-muted" style="text-align: center; padding: 1.5rem;">Loading forensic registry...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadRecentDeskRecords();
+    });
+
+    function loadRecentDeskRecords() {
+        const tbody = document.getElementById('desk-history-tbody');
+        if (!tbody) return;
+
+        fetch('/api/history')
+        .then(res => res.json())
+        .then(data => {
+            tbody.innerHTML = '';
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-muted" style="text-align: center; padding: 1.5rem;">No prior forensic investigations found in registry.</td></tr>';
+                return;
+            }
+
+            data.slice(0, 10).forEach(rec => {
+                const tr = document.createElement('tr');
+                const verdictClass = rec.verdict === 'FAKE' ? 'fake' : (rec.verdict === 'SUSPICIOUS' ? 'suspicious' : 'real');
+                const verdictLabel = rec.verdict === 'FAKE' ? 'LIKELY MANIPULATED' : (rec.verdict === 'SUSPICIOUS' ? 'SUSPICIOUS' : 'AUTHENTIC');
+                const scorePct = (rec.fusion_score * 100).toFixed(1) + '%';
+                const peakStr = rec.peak_frame ? `Frame #${rec.peak_frame} (${rec.peak_timestamp}s)` : 'N/A';
+
+                tr.innerHTML = `
+                    <td><strong style="color: var(--color-cyan);">DS-${rec.id.toUpperCase()}</strong></td>
+                    <td>${rec.timestamp || 'N/A'}</td>
+                    <td>${rec.filename}</td>
+                    <td><span style="color: ${rec.media_type === 'video' ? 'var(--color-purple)' : 'var(--color-cyan)'}; font-weight: 700;">${(rec.media_type || 'image').toUpperCase()}</span></td>
+                    <td><span class="badge-verdict ${verdictClass}">${verdictLabel}</span></td>
+                    <td><strong>${scorePct}</strong></td>
+                    <td>${peakStr}</td>
+                    <td>
+                        <a href="/api/report/${rec.id}" target="_blank" class="btn-forensic btn-sm btn-green">PDF Report</a>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(err => {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--color-red); padding: 1.5rem;">Registry load error: ${err.message}</td></tr>`;
+        });
+    }
+</script>
+{% endblock %}

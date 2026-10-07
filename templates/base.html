@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DEEPSHIELD | Multi-Signal Digital Forensics{% endblock %}</title>
+    
+    <!-- Google Fonts: JetBrains Mono & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom Multi-Color Forensic Workstation CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Compact Left Navigation Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-title">
+                    <span>🛡️</span> DEEPSHIELD
+                </div>
+                <div class="brand-subtitle">Digital Forensics v2.0</div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Forensic Workstation</div>
+                <a href="/" class="nav-item nav-overview {% if request.path == '/' %}active{% endif %}">
+                    <span class="nav-num">[01]</span> OVERVIEW
+                </a>
+                <a href="/image" class="nav-item nav-image {% if request.path == '/image' %}active{% endif %}">
+                    <span class="nav-num">[02]</span> IMAGE INTAKE
+                </a>
+                <a href="/video" class="nav-item nav-video {% if request.path == '/video' %}active{% endif %}">
+                    <span class="nav-num">[03]</span> VIDEO INTAKE
+                </a>
+                <a href="/history" class="nav-item nav-history {% if request.path == '/history' %}active{% endif %}">
+                    <span class="nav-num">[04]</span> CASE HISTORY
+                </a>
+                <a href="/about" class="nav-item nav-about {% if request.path == '/about' %}active{% endif %}">
+                    <span class="nav-num">[05]</span> METHODOLOGY
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sys-status-row">
+                    <span class="text-muted">SYSTEM STATUS:</span>
+                    <span class="status-indicator">
+                        <span class="dot"></span> ONLINE
+                    </span>
+                </div>
+                <div class="sys-status-row">
+                    <span class="text-muted">ENGINE:</span>
+                    <span id="sidebar-model-status" class="status-indicator">
+                        <span class="dot"></span> READY
+                    </span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <div class="main-workspace">
+            <!-- Top Console Bar -->
+            <header class="top-bar">
+                <div class="case-info">
+                    <div class="case-info-item">
+                        <span class="info-label">CONSOLE:</span>
+                        <span class="info-val" style="color: var(--color-amber);">MULTI-SIGNAL FORENSICS WORKSTATION</span>
+                    </div>
+                    <div class="case-info-item">
+                        <span class="info-label">STATUS:</span>
+                        <span class="info-val" id="top-case-status" style="color: var(--color-green);">ACTIVE PROTOCOL</span>
+                    </div>
+                </div>
+                <div class="case-info-item">
+                    <span class="info-label">TIME (UTC):</span>
+                    <span class="info-val" id="top-clock" style="color: var(--color-cyan);">--:--:--</span>
+                </div>
+            </header>
+
+            <!-- Main Page Content -->
+            <main class="content-area">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const clockEl = document.getElementById('top-clock');
+            if (clockEl) {
+                clockEl.textContent = now.toISOString().substring(11, 19) + ' UTC';
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

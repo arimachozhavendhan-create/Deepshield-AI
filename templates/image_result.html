@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}DEEPSHIELD | Image Forensic Evidence Intake{% endblock %}
+
+{% block content %}
+<div class="section-header">MEDIA EVIDENCE INTAKE /// IMAGE FORENSICS</div>
+
+<!-- Forensic Evidence Tray Upload Box -->
+<div class="panel" id="upload-panel">
+    <div class="panel-header">
+        <span>Forensic Evidence Intake Tray</span>
+        <span style="color: var(--color-cnn);">FORMATS: JPG, JPEG, PNG, WEBP</span>
+    </div>
+    <div class="panel-body">
+        <form id="image-upload-form" enctype="multipart/form-data">
+            <input type="file" id="file-input" name="file" accept="image/png, image/jpeg, image/jpg, image/webp" hidden>
+            <div class="intake-tray" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                <div class="tray-icon">[ 📁 INGEST IMAGE EVIDENCE ]</div>
+                <div class="tray-title">Click or Drag Suspect Image Media Here</div>
+                <div class="tray-hint">System extracts SHA-256 cryptographic hash and resolution metadata prior to inference.</div>
+            </div>
+        </form>
+
+        <!-- Metadata Table (Populated on File Selection) -->
+        <div id="file-meta-container" class="hidden">
+            <table class="forensic-table intake-meta-table">
+                <thead>
+                    <tr>
+                        <th>FILE NAME</th>
+                        <th>FORMAT</th>
+                        <th>FILE SIZE</th>
+                        <th>DIMENSIONS</th>
+                        <th>SHA-256 HASH</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="meta-filename-val">--</td>
+                        <td id="meta-format-val">--</td>
+                        <td id="meta-size-val">--</td>
+                        <td id="meta-dim-val">Extracting...</td>
+                        <td id="meta-hash-val" style="color: var(--color-cnn); font-weight: 700;">Computing SHA-256...</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: 1.25rem; text-align: right;">
+                <button type="button" class="btn-forensic btn-forensic-primary" id="btn-submit-image">
+                    [ BEGIN FORENSIC ANALYSIS ]
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Analysis State -->
+<div id="loading-spinner" class="loading-box hidden">
+    <div class="forensic-spinner">[ PROCESSING IMAGE EVIDENCE PIPELINE ]</div>
+    <div class="text-muted" id="loading-status-text" style="font-family: var(--font-mono); font-size: 0.95rem;">
+        Extracting primary face region & executing 2D Fast Fourier Transform...
+    </div>
+    <div class="progress-line-bg">
+        <div class="progress-line-fill" id="analysis-progress-fill" style="width: 45%;"></div>
+    </div>
+</div>
+
+<!-- FORENSIC CASE REPORT RESULT SECTION -->
+<div id="result-container" class="result-container hidden">
+
+    <div class="demo-banner hidden" id="demo-mode-badge" style="background-color: var(--color-warn-bg); border: 2px solid var(--color-warn); color: var(--color-warn); padding: 0.8rem 1.2rem; margin-bottom: 1.5rem; font-family: var(--font-mono); font-size: 0.88rem; font-weight: 700; border-radius: var(--radius-md);">
+        ⚠️ <strong>DEMO MODE:</strong> Custom trained weights not found in <code>models/</code>. Operating using EfficientNetB0 ImageNet feature heuristics.
+    </div>
+
+    <!-- Case Header Bar with Horizontal Confidence Bar -->
+    <div class="case-header-bar">
+        <div>
+            <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);">CASE FILE IDENTIFIER</div>
+            <div style="font-family: var(--font-mono); font-size: 1.3rem; font-weight: 800; color: var(--text-bright);" id="case-id-display">
+                CASE DS-XXXX
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">VERDICT EVALUATION</div>
+            <span class="badge-verdict" id="verdict-badge">LIKELY MANIPULATED</span>
+        </div>
+
+        <div class="confidence-bar-container">
+            <span style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); font-weight: 700;">SUSPICION:</span>
+            <div class="confidence-bar-bg">
+                <div class="confidence-bar-fill" id="confidence-bar-fill" style="width: 86%;"></div>
+            </div>
+            <span class="confidence-val" id="fusion-score-val">86.4%</span>
+        </div>
+
+        <div>
+            <a href="#" id="btn-download-pdf" target="_blank" class="btn-forensic btn-sm">
+                PDF Report ➔
+            </a>
+        </div>
+    </div>
+
+    <!-- Findings & Evidence Grid -->
+    <div class="section-header">MULTI-SIGNAL EVIDENCE FINDINGS</div>
+
+    <div class="evidence-grid">
+        <div class="evidence-card card-cnn">
+            <div class="evidence-card-header">
+                <span style="color: var(--color-cnn);">🧠 VISUAL SPATIAL CNN</span>
+                <span class="severity-pill" id="cnn-severity-pill">HIGH</span>
+            </div>
+            <div class="evidence-title">Spatial Texture Analysis</div>
+            <div style="font-family: var(--font-mono); font-size: 0.88rem; color: var(--text-muted);">
+                EfficientNetB0 Anomaly Score: <strong id="cnn-score-val" style="color: var(--color-cnn); font-size: 1.05rem;">82.0%</strong>
+            </div>
+        </div>
+
+        <div class="evidence-card card-fft">
+            <div class="evidence-card-header">
+                <span style="color: var(--color-fft);">📊 2D FFT FREQUENCY SPECTRUM</span>
+                <span class="severity-pill" id="fft-severity-pill">HIGH</span>
+            </div>
+            <div class="evidence-title">Spectral Noise Energy</div>
+            <div style="font-family: var(--font-mono); font-size: 0.88rem; color: var(--text-muted);">
+                High-Freq Noise Ratio: <strong id="fft-score-val" style="color: var(--color-fft); font-size: 1.05rem;">78.0%</strong>
+            </div>
+        </div>
+
+        <div class="evidence-card card-blink">
+            <div class="evidence-card-header">
+                <span style="color: var(--color-blink);">👁️ BEHAVIORAL EYE BLINKING</span>
+                <span class="severity-pill normal">N/A</span>
+            </div>
+            <div class="evidence-title">Temporal EAR Tracking</div>
+            <div style="font-family: var(--font-mono); font-size: 0.88rem; color: var(--text-muted);">
+                Single Frame Media Mode
+            </div>
+        </div>
+    </div>
+
+    <!-- Technical Analysis & Previews Grid -->
+    <div class="panel">
+        <div class="panel-header">
+            <span>EXPLAINABLE EVIDENCE INTERPRETATION & ADAPTIVE FUSION</span>
+        </div>
+        <div class="panel-body">
+            <div style="font-family: var(--font-mono); font-size: 0.92rem; color: var(--text-primary); padding: 1rem; background-color: var(--bg-panel-header); border: 2px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 1.5rem; line-height: 1.6;" id="explanation-text">
+                Multi-signal evidence evaluated.
+            </div>
+
+            <!-- Adaptive Weight Fusion Breakdown -->
+            <div style="margin-bottom: 1.5rem;">
+                <div style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 800; color: var(--text-bright); margin-bottom: 0.6rem; text-transform: uppercase;">
+                    ADAPTIVE FUSION WEIGHT CONTRIBUTION (STATIC IMAGE RE-NORMALIZED)
+                </div>
+                <div class="fusion-weight-row">
+                    <span>VISUAL FEATURES (EfficientNetB0 CNN)</span>
+                    <span style="color: var(--color-cnn); font-weight: 700;">66.7% WEIGHT</span>
+                </div>
+                <div class="fusion-weight-row">
+                    <span>2D FFT SPECTRUM (Frequency Domain)</span>
+                    <span style="color: var(--color-fft); font-weight: 700;">33.3% WEIGHT</span>
+                </div>
+                <div class="fusion-weight-row" style="color: var(--color-blue); font-weight: 800; font-size: 1rem;">
+                    <span>FINAL ADAPTIVE FUSION CONFIDENCE</span>
+                    <span id="fusion-recap-val">86.4%</span>
+                </div>
+            </div>
+
+            <!-- Evidence Previews Grid -->
+            <div class="frame-inspector-grid">
+                <div>
+                    <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); font-weight: 700; margin-bottom: 0.5rem;">PRIMARY DETECTED FACE REGION</div>
+                    <div class="frame-preview-box">
+                        <img id="face-crop-img" src="" alt="Primary Face Region">
+                    </div>
+                </div>
+                <div>
+                    <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); font-weight: 700; margin-bottom: 0.5rem;">2D FFT MAGNITUDE SPECTRUM</div>
+                    <div class="frame-preview-box">
+                        <img id="fft-spectrum-img" src="" alt="FFT Spectrum">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        initImageDetectionPage();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+[
+  {
+    "id": "d6914025",
+    "timestamp": "2026-10-07 21:54:35",
+    "filename": "d6914025_fake-adgwpnyltr-0.mp4",
+    "media_type": "video",
+    "verdict": "SUSPICIOUS",
+    "fusion_score": 0.5548,
+    "peak_frame": 220,
+    "peak_timestamp": 7.33,
+    "is_demo": true
+  },
+  {
+    "id": "593e2f8a",
+    "timestamp": "2026-10-07 21:22:19",
+    "filename": "593e2f8a_test_synthetic_video.mp4",
+    "media_type": "video",
+    "verdict": "REAL",
+    "fusion_score": 0.3028,
+    "peak_frame": 40,
+    "peak_timestamp": 1.33,
+    "is_demo": true
+  },
+  {
+    "id": "2047d7dc",
+    "timestamp": "2026-10-07 21:21:53",
+    "filename": "test_synthetic_face.jpg",
+    "media_type": "image",
+    "verdict": "REAL",
+    "fusion_score": 0.234,
+    "peak_frame": null,
+    "peak_timestamp": null,
+    "is_demo": true
+  }
+]

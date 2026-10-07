@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}DEEPSHIELD | Forensic System Methodology{% endblock %}
+
+{% block content %}
+<div class="section-header">FORENSIC SYSTEM METHODOLOGY /// TECHNICAL SPECIFICATION</div>
+
+<div class="panel">
+    <div class="panel-header">
+        <span>01. SYSTEM ARCHITECTURE & MULTI-SIGNAL PROTOCOL</span>
+    </div>
+    <div class="panel-body">
+        <p style="margin-bottom: 1rem; color: var(--text-primary);">
+            DeepShield is designed as a digital media evidence inspection workstation. Rather than relying on single-model predictions,
+            DeepShield fuses three independent evidence signals to identify visual, frequency, and behavioral manipulation signatures:
+        </p>
+        <ul style="margin-left: 1.5rem; color: var(--text-muted); font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.8;">
+            <li><strong>VISUAL SPATIAL CNN (EfficientNetB0):</strong> Evaluates facial crop boundary blending, pixel-level artifacts, and feature spatial geometry.</li>
+            <li><strong>2D MAGNITUDE FREQUENCY SPECTRUM (FFT):</strong> Computes 2D Fast Fourier Transform to isolate high-frequency energy ratio anomalies characteristic of generative neural models.</li>
+            <li><strong>TEMPORAL EYE BLINKING (MediaPipe EAR):</strong> Calculates Eye Aspect Ratio (EAR) across frame sequences to flag unnatural blink rates and static eye closures.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-header">
+        <span>02. ADAPTIVE SIGNAL FUSION & WEIGHT RE-NORMALIZATION</span>
+    </div>
+    <div class="panel-body">
+        <div class="fusion-weight-row">
+            <span>FULL VIDEO MODALITY FUSION</span>
+            <span>50% CNN + 25% FFT + 25% EYE BLINKING</span>
+        </div>
+        <div class="fusion-weight-row">
+            <span>STATIC IMAGE MODALITY FUSION (RE-NORMALIZED)</span>
+            <span>66.7% CNN + 33.3% FFT (BLINKING N/A)</span>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-header">
+        <span>03. SYSTEM LIMITATIONS & FORENSIC DISCLAIMERS</span>
+    </div>
+    <div class="panel-body" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); line-height: 1.6;">
+        <p>• Output represents an AI-assisted detection confidence score based on feature heuristics and visual CNN models.</p>
+        <p>• High media compression or low resolution may impact high-frequency spectral ratios.</p>
+        <p>• Primary face crop scope evaluates the dominant detected facial region per frame.</p>
+    </div>
+</div>
+{% endblock %}
